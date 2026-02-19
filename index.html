@@ -1,1189 +1,273 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>かんたん家計簿</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-/* ===== Reset & Base ===== */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface2: #334155;
-  --primary: #6366f1;
-  --primary-light: #818cf8;
-  --accent: #f472b6;
-  --success: #34d399;
-  --warning: #fbbf24;
-  --danger: #f87171;
-  --text: #f1f5f9;
-  --text-dim: #94a3b8;
-  --radius: 16px;
-  --radius-sm: 10px;
-}
-html { font-size: 16px; }
-body {
-  font-family: 'Noto Sans JP', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100dvh;
-  -webkit-font-smoothing: antialiased;
-  padding-bottom: 80px;
-}
-
-/* ===== Header ===== */
-.header {
-  background: linear-gradient(135deg, var(--primary), #8b5cf6);
-  padding: 20px 20px 24px;
-  text-align: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 4px 20px rgba(99,102,241,0.3);
-}
-.header h1 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-}
-.header p {
-  font-size: 0.75rem;
-  opacity: 0.8;
-  margin-top: 2px;
-}
-
-/* ===== Month Selector ===== */
-.month-selector {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 16px 20px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--surface2);
-}
-.month-selector button {
-  background: var(--surface2);
-  border: none;
-  color: var(--text);
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  font-size: 1.2rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-.month-selector button:active { background: var(--primary); }
-.month-label {
-  font-size: 1.1rem;
-  font-weight: 600;
-  min-width: 140px;
-  text-align: center;
-}
-
-/* ===== Summary Cards ===== */
-.summary {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding: 16px 16px 8px;
-}
-.summary-card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 16px;
-  text-align: center;
-  border: 1px solid var(--surface2);
-  transition: transform 0.15s;
-}
-.summary-card:active { transform: scale(0.97); }
-.summary-card.total {
-  grid-column: 1 / -1;
-  background: linear-gradient(135deg, var(--primary), #8b5cf6);
-  border: none;
-}
-.summary-card .label {
-  font-size: 0.7rem;
-  color: var(--text-dim);
-  margin-bottom: 4px;
-  font-weight: 500;
-}
-.summary-card.total .label { color: rgba(255,255,255,0.8); }
-.summary-card .amount {
-  font-size: 1.3rem;
-  font-weight: 700;
-}
-.summary-card.total .amount { font-size: 1.8rem; }
-
-/* ===== Category Breakdown ===== */
-.category-section {
-  padding: 12px 16px;
-}
-.category-section h2 {
-  font-size: 0.85rem;
-  color: var(--text-dim);
-  margin-bottom: 10px;
-  padding-left: 4px;
-}
-.category-bar-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.cat-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.cat-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-.cat-info { flex: 1; min-width: 0; }
-.cat-name {
-  font-size: 0.75rem;
-  font-weight: 500;
-  margin-bottom: 3px;
-}
-.cat-bar-bg {
-  height: 6px;
-  background: var(--surface2);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.cat-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.5s ease;
-}
-.cat-amount {
-  font-size: 0.8rem;
-  font-weight: 600;
-  min-width: 70px;
-  text-align: right;
-  flex-shrink: 0;
-}
-
-/* ===== Expense List ===== */
-.expense-section {
-  padding: 12px 16px 20px;
-}
-.expense-section h2 {
-  font-size: 0.85rem;
-  color: var(--text-dim);
-  margin-bottom: 10px;
-  padding-left: 4px;
-}
-.expense-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.expense-item {
-  background: var(--surface);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid var(--surface2);
-  animation: fadeIn 0.3s ease;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.expense-item:active { background: var(--surface2); }
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.expense-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-.expense-detail { flex: 1; min-width: 0; }
-.expense-store {
-  font-size: 0.85rem;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.expense-meta {
-  font-size: 0.7rem;
-  color: var(--text-dim);
-  margin-top: 2px;
-}
-.expense-amount {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--accent);
-  flex-shrink: 0;
-}
-.expense-delete {
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  font-size: 1.1rem;
-  cursor: pointer;
-  padding: 4px;
-  flex-shrink: 0;
-  transition: color 0.2s;
-}
-.expense-delete:active { color: var(--danger); }
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--text-dim);
-}
-.empty-state .emoji { font-size: 3rem; margin-bottom: 12px; }
-.empty-state p { font-size: 0.85rem; line-height: 1.6; }
-
-/* ===== Bottom Nav ===== */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--surface);
-  border-top: 1px solid var(--surface2);
-  display: flex;
-  justify-content: space-around;
-  padding: 8px 0;
-  padding-bottom: max(8px, env(safe-area-inset-bottom));
-  z-index: 100;
-}
-.nav-btn {
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  font-size: 0.65rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  cursor: pointer;
-  padding: 4px 12px;
-  transition: color 0.2s;
-}
-.nav-btn.active { color: var(--primary-light); }
-.nav-btn .icon { font-size: 1.4rem; }
-
-/* ===== Add Button ===== */
-.add-fab {
-  position: fixed;
-  bottom: 70px;
-  right: 20px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), #8b5cf6);
-  border: none;
-  color: white;
-  font-size: 1.8rem;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(99,102,241,0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 99;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.add-fab:active {
-  transform: scale(0.9);
-  box-shadow: 0 2px 10px rgba(99,102,241,0.3);
-}
-
-/* ===== Modal ===== */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(4px);
-  z-index: 200;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.25s;
-}
-.modal-overlay.show {
-  opacity: 1;
-  pointer-events: auto;
-}
-.modal {
-  background: var(--surface);
-  border-radius: 24px 24px 0 0;
-  width: 100%;
-  max-width: 480px;
-  max-height: 90dvh;
-  overflow-y: auto;
-  padding: 20px 20px 32px;
-  transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.22,0.61,0.36,1);
-}
-.modal-overlay.show .modal {
-  transform: translateY(0);
-}
-.modal-handle {
-  width: 40px;
-  height: 4px;
-  background: var(--surface2);
-  border-radius: 2px;
-  margin: 0 auto 16px;
-}
-.modal h2 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-/* ===== Form ===== */
-.form-group {
-  margin-bottom: 16px;
-}
-.form-group label {
-  display: block;
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  margin-bottom: 6px;
-  font-weight: 500;
-}
-.form-group input, .form-group select {
-  width: 100%;
-  padding: 12px 14px;
-  background: var(--bg);
-  border: 2px solid var(--surface2);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  font-size: 1rem;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s;
-}
-.form-group input:focus, .form-group select:focus {
-  border-color: var(--primary);
-}
-.form-group input::placeholder {
-  color: var(--text-dim);
-  opacity: 0.6;
-}
-.form-group select {
-  -webkit-appearance: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M4.5 6l3.5 4 3.5-4z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
-}
-
-/* Category select chips */
-.category-chips {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-}
-.category-chip {
-  background: var(--bg);
-  border: 2px solid var(--surface2);
-  border-radius: var(--radius-sm);
-  padding: 10px 6px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.75rem;
-  font-family: inherit;
-  color: var(--text);
-}
-.category-chip .chip-icon { font-size: 1.2rem; display: block; margin-bottom: 3px; }
-.category-chip.selected {
-  border-color: var(--primary);
-  background: rgba(99,102,241,0.15);
-}
-.category-chip:active { transform: scale(0.95); }
-
-/* Receipt upload */
-.receipt-upload {
-  border: 2px dashed var(--surface2);
-  border-radius: var(--radius-sm);
-  padding: 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-.receipt-upload:active { border-color: var(--primary); }
-.receipt-upload .upload-icon { font-size: 2rem; margin-bottom: 8px; }
-.receipt-upload p { font-size: 0.75rem; color: var(--text-dim); }
-.receipt-upload input { display: none; }
-.receipt-preview {
-  max-width: 100%;
-  max-height: 150px;
-  border-radius: 8px;
-  margin-top: 8px;
-  object-fit: contain;
-}
-
-/* Submit button */
-.btn-submit {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, var(--primary), #8b5cf6);
-  border: none;
-  border-radius: var(--radius-sm);
-  color: white;
-  font-size: 1rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  margin-top: 8px;
-  transition: transform 0.15s, opacity 0.15s;
-}
-.btn-submit:active { transform: scale(0.98); opacity: 0.9; }
-.btn-submit:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* ===== Pages ===== */
-.page { display: none; }
-.page.active { display: block; }
-
-/* ===== Settings Page ===== */
-.settings-section {
-  padding: 16px;
-}
-.settings-card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 16px;
-  border: 1px solid var(--surface2);
-  margin-bottom: 12px;
-}
-.settings-card h3 {
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-.settings-card p {
-  font-size: 0.75rem;
-  color: var(--text-dim);
-  line-height: 1.5;
-  margin-bottom: 12px;
-}
-.btn-danger {
-  padding: 10px 20px;
-  background: rgba(248,113,113,0.2);
-  border: 1px solid var(--danger);
-  border-radius: var(--radius-sm);
-  color: var(--danger);
-  font-size: 0.85rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-danger:active { background: rgba(248,113,113,0.3); }
-.btn-export {
-  padding: 10px 20px;
-  background: rgba(99,102,241,0.2);
-  border: 1px solid var(--primary);
-  border-radius: var(--radius-sm);
-  color: var(--primary-light);
-  font-size: 0.85rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn-export:active { background: rgba(99,102,241,0.3); }
-
-/* ===== Toast ===== */
-.toast {
-  position: fixed;
-  bottom: 90px;
-  left: 50%;
-  transform: translateX(-50%) translateY(20px);
-  background: var(--success);
-  color: #064e3b;
-  padding: 10px 24px;
-  border-radius: 100px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  z-index: 300;
-  opacity: 0;
-  transition: all 0.3s;
-  pointer-events: none;
-  white-space: nowrap;
-}
-.toast.show {
-  opacity: 1;
-  transform: translateX(-50%) translateY(0);
-}
-
-/* ===== Confirm Dialog ===== */
-.confirm-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(4px);
-  z-index: 250;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-}
-.confirm-overlay.show { opacity: 1; pointer-events: auto; }
-.confirm-box {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 24px;
-  max-width: 300px;
-  width: 90%;
-  text-align: center;
-}
-.confirm-box p {
-  font-size: 0.9rem;
-  margin-bottom: 20px;
-  line-height: 1.5;
-}
-.confirm-actions {
-  display: flex;
-  gap: 10px;
-}
-.confirm-actions button {
-  flex: 1;
-  padding: 10px;
-  border-radius: var(--radius-sm);
-  font-size: 0.85rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  border: none;
-  transition: opacity 0.15s;
-}
-.confirm-actions button:active { opacity: 0.8; }
-.btn-cancel { background: var(--surface2); color: var(--text); }
-.btn-confirm-delete { background: var(--danger); color: white; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>ポチャッコのわくわく家計簿</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<!-- ===== Header ===== -->
-<header class="header">
-  <h1>📒ポチャッコのわくわく家計簿</h1>
-  <p>レシートを記録して支出を管理</p>
-</header>
+  <header class="header">
+    <h1>🐾 ポチャッコのわくわく家計簿</h1>
+    <p>写真を撮るだけ、かんたん家計管理</p>
+    <button class="btn-camera-top" onclick="go('camera')" aria-label="撮影">📷</button>
+  </header>
 
-<!-- ===== Page: Home ===== -->
-<div id="page-home" class="page active">
-  <!-- Month Selector -->
-  <div class="month-selector">
-    <button id="prev-month" aria-label="前の月">◀</button>
-    <span class="month-label" id="month-label"></span>
-    <button id="next-month" aria-label="次の月">▶</button>
-  </div>
-
-  <!-- Summary -->
-  <div class="summary" id="summary-cards"></div>
-
-  <!-- Category Breakdown -->
-  <div class="category-section" id="category-section">
-    <h2>📊 カテゴリ別</h2>
-    <div class="category-bar-list" id="category-bars"></div>
-  </div>
-
-  <!-- Expense List -->
-  <div class="expense-section">
-    <h2>📋 支出一覧</h2>
-    <div class="expense-list" id="expense-list"></div>
-  </div>
-</div>
-
-<!-- ===== Page: Settings ===== -->
-<div id="page-settings" class="page">
-  <div class="settings-section">
-    <div class="settings-card">
-      <h3>📤 データエクスポート</h3>
-      <p>家計簿データをCSVファイルとしてダウンロードできます。</p>
-      <button class="btn-export" onclick="exportCSV()">CSVダウンロード</button>
+  <!-- ===== HOME ===== -->
+  <div id="page-home" class="page active">
+    <div class="pochacco-area">
+      <svg class="pochacco-svg" viewBox="0 0 120 120">
+        <ellipse cx="60" cy="112" rx="18" ry="5" fill="#e8e8e8" />
+        <circle cx="60" cy="60" r="36" fill="#fff" stroke="#555" stroke-width="1.8" />
+        <ellipse cx="32" cy="34" rx="10" ry="16" fill="#fff" stroke="#555" stroke-width="1.8"
+          transform="rotate(-15 32 34)" />
+        <ellipse cx="88" cy="34" rx="10" ry="16" fill="#fff" stroke="#555" stroke-width="1.8"
+          transform="rotate(15 88 34)" />
+        <ellipse cx="58" cy="26" rx="20" ry="8" fill="#7ECBE6" />
+        <circle cx="58" cy="20" r="4.5" fill="#7ECBE6" />
+        <circle cx="48" cy="56" r="3.5" fill="#333" />
+        <circle cx="72" cy="56" r="3.5" fill="#333" />
+        <circle cx="49.2" cy="54.5" r="1.3" fill="#fff" />
+        <circle cx="73.2" cy="54.5" r="1.3" fill="#fff" />
+        <ellipse cx="60" cy="65" rx="4.5" ry="3" fill="#333" />
+        <path d="M54 69Q60 75 66 69" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round" />
+        <circle cx="38" cy="64" r="5.5" fill="#FFB6C1" opacity=".35" />
+        <circle cx="82" cy="64" r="5.5" fill="#FFB6C1" opacity=".35" />
+      </svg>
+      <div class="speech-bubble" id="pochacco-msg"></div>
     </div>
-    <div class="settings-card">
+    <div class="month-sel">
+      <button onclick="changeMonth(-1)">◀</button>
+      <span class="month-label" id="ml"></span>
+      <button onclick="changeMonth(1)">▶</button>
+    </div>
+    <div class="cards" id="sum-cards"></div>
+    <div class="section" id="cat-section">
+      <h2>📊 カテゴリ別</h2>
+      <div id="cat-bars"></div>
+    </div>
+    <div class="section">
+      <h2>📋 最近の記録</h2>
+      <div id="recent-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== CAMERA ===== -->
+  <div id="page-camera" class="page">
+    <div class="pochacco-area">
+      <svg class="pochacco-svg" viewBox="0 0 120 120">
+        <ellipse cx="60" cy="112" rx="18" ry="5" fill="#e8e8e8" />
+        <circle cx="60" cy="60" r="36" fill="#fff" stroke="#555" stroke-width="1.8" />
+        <ellipse cx="32" cy="34" rx="10" ry="16" fill="#fff" stroke="#555" stroke-width="1.8"
+          transform="rotate(-15 32 34)" />
+        <ellipse cx="88" cy="34" rx="10" ry="16" fill="#fff" stroke="#555" stroke-width="1.8"
+          transform="rotate(15 88 34)" />
+        <ellipse cx="58" cy="26" rx="20" ry="8" fill="#7ECBE6" />
+        <circle cx="58" cy="20" r="4.5" fill="#7ECBE6" />
+        <circle cx="48" cy="56" r="3.5" fill="#333" />
+        <circle cx="72" cy="56" r="3.5" fill="#333" />
+        <circle cx="49.2" cy="54.5" r="1.3" fill="#fff" />
+        <circle cx="73.2" cy="54.5" r="1.3" fill="#fff" />
+        <ellipse cx="60" cy="65" rx="4.5" ry="3" fill="#333" />
+        <path d="M54 69Q60 75 66 69" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round" />
+        <circle cx="38" cy="64" r="5.5" fill="#FFB6C1" opacity=".35" />
+        <circle cx="82" cy="64" r="5.5" fill="#FFB6C1" opacity=".35" />
+      </svg>
+      <div class="speech-bubble" id="cam-msg">レシートを撮影してね！📸</div>
+    </div>
+    <div class="camera-area">
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+        <div class="up-icon">📄</div>
+        <p>タップしてレシート画像を選択</p>
+        <input type="file" id="file-input" accept="image/*">
+      </div>
+      <img id="cam-preview" class="receipt-preview" style="display:none" alt="プレビュー">
+      <div class="camera-btns">
+        <button class="btn-cam" onclick="document.getElementById('cam-input').click()">📷 カメラで撮影<input type="file"
+            id="cam-input" accept="image/*" capture="environment" style="display:none"></button>
+        <button class="btn-file" onclick="document.getElementById('file-input').click()">📁 ファイル選択</button>
+      </div>
+      <div class="processing" id="processing" style="display:none">
+        <div class="spinner"></div>
+        <p style="font-size:.85rem;color:var(--text-dim)">AIが読み取り中...</p>
+      </div>
+      <button class="btn-primary" id="btn-manual" style="margin-top:14px" onclick="openManual()">✏️ 手入力で追加</button>
+    </div>
+  </div>
+
+  <!-- ===== RESULT ===== -->
+  <div id="page-result" class="page">
+    <div class="pochacco-area">
+      <svg class="pochacco-svg" viewBox="0 0 120 120">
+        <ellipse cx="60" cy="112" rx="18" ry="5" fill="#e8e8e8" />
+        <circle cx="60" cy="60" r="36" fill="#fff" stroke="#555" stroke-width="1.8" />
+        <ellipse cx="32" cy="34" rx="10" ry="16" fill="#fff" stroke="#555" stroke-width="1.8"
+          transform="rotate(-15 32 34)" />
+        <ellipse cx="88" cy="34" rx="10" ry="16" fill="#fff" stroke="#555" stroke-width="1.8"
+          transform="rotate(15 88 34)" />
+        <ellipse cx="58" cy="26" rx="20" ry="8" fill="#7ECBE6" />
+        <circle cx="58" cy="20" r="4.5" fill="#7ECBE6" />
+        <circle cx="48" cy="56" r="3.5" fill="#333" />
+        <circle cx="72" cy="56" r="3.5" fill="#333" />
+        <circle cx="49.2" cy="54.5" r="1.3" fill="#fff" />
+        <circle cx="73.2" cy="54.5" r="1.3" fill="#fff" />
+        <ellipse cx="60" cy="65" rx="4.5" ry="3" fill="#333" />
+        <path d="M54 69Q60 75 66 69" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round" />
+        <circle cx="38" cy="64" r="5.5" fill="#FFB6C1" opacity=".35" />
+        <circle cx="82" cy="64" r="5.5" fill="#FFB6C1" opacity=".35" />
+      </svg>
+      <div class="speech-bubble" id="result-msg">読み取り完了！確認してね ✨</div>
+    </div>
+    <div class="form-wrap">
+      <div class="fg"><label>📅 日付</label><input type="date" id="r-date"></div>
+      <div class="fg"><label>🏪 店名</label><input type="text" id="r-store" placeholder="例: セブンイレブン"></div>
+      <div class="fg"><label>💰 合計金額（円）</label><input type="number" id="r-amount" placeholder="例: 1280" min="0"
+          inputmode="numeric"></div>
+      <div class="fg"><label>📁 カテゴリ</label>
+        <div class="cat-chips" id="r-cats"></div>
+      </div>
+      <div class="fg" id="r-items-wrap" style="display:none"><label>📝 品目</label>
+        <div class="items-list" id="r-items"></div>
+      </div>
+      <button class="btn-primary" onclick="saveResult()">✅ 保存する</button>
+      <button class="btn-secondary" onclick="go('camera')">📷 もう1枚撮影する</button>
+    </div>
+  </div>
+
+  <!-- ===== HISTORY ===== -->
+  <div id="page-history" class="page">
+    <div class="search-bar"><input type="text" id="search-input" placeholder="店名で検索..." oninput="renderHistory()"></div>
+    <div class="filter-chips" id="filter-chips"></div>
+    <div class="section">
+      <div id="history-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== ANALYSIS ===== -->
+  <div id="page-analysis" class="page">
+    <div class="month-sel">
+      <button onclick="changeMonth(-1)">◀</button>
+      <span class="month-label" id="ml2"></span>
+      <button onclick="changeMonth(1)">▶</button>
+    </div>
+    <div class="chart-container">
+      <h3>📊 カテゴリ別内訳</h3><canvas id="pie-chart"></canvas>
+    </div>
+    <div class="chart-container">
+      <h3>📈 月別推移（過去6ヶ月）</h3><canvas id="bar-chart"></canvas>
+    </div>
+    <div class="insight-card" id="insights">
+      <h3>💡 分析・アドバイス</h3>
+      <div id="insight-body"></div>
+    </div>
+  </div>
+
+  <!-- ===== SETTINGS ===== -->
+  <div id="page-settings" class="page">
+    <div class="pochacco-area">
+      <svg class="pochacco-svg" viewBox="0 0 120 120">
+        <ellipse cx="60" cy="112" rx="18" ry="5" fill="#e8e8e8" />
+        <circle cx="60" cy="60" r="36" fill="#fff" stroke="#555" stroke-width="1.8" />
+        <ellipse cx="32" cy="34" rx="10" ry="16" fill="#fff" stroke="#555" stroke-width="1.8"
+          transform="rotate(-15 32 34)" />
+        <ellipse cx="88" cy="34" rx="10" ry="16" fill="#fff" stroke="#555" stroke-width="1.8"
+          transform="rotate(15 88 34)" />
+        <ellipse cx="58" cy="26" rx="20" ry="8" fill="#7ECBE6" />
+        <circle cx="58" cy="20" r="4.5" fill="#7ECBE6" />
+        <circle cx="48" cy="56" r="3.5" fill="#333" />
+        <circle cx="72" cy="56" r="3.5" fill="#333" />
+        <circle cx="49.2" cy="54.5" r="1.3" fill="#fff" />
+        <circle cx="73.2" cy="54.5" r="1.3" fill="#fff" />
+        <ellipse cx="60" cy="65" rx="4.5" ry="3" fill="#333" />
+        <path d="M54 69Q60 75 66 69" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round" />
+        <circle cx="38" cy="64" r="5.5" fill="#FFB6C1" opacity=".35" />
+        <circle cx="82" cy="64" r="5.5" fill="#FFB6C1" opacity=".35" />
+      </svg>
+      <div class="speech-bubble">設定を変更できるよ ⚙️</div>
+    </div>
+    <div class="set-card">
+      <h3>🔑 Gemini APIキー</h3>
+      <p>レシートのAI読み取りに必要です。<br><a href="https://aistudio.google.com/apikey" target="_blank"
+          style="color:var(--primary-dark)">こちら</a>から無料で取得できます。</p>
+      <div class="fg"><input type="password" id="s-apikey" placeholder="APIキーを入力..."></div>
+      <button class="btn-export" onclick="saveApiKey()">保存</button>
+    </div>
+    <div class="set-card">
+      <h3>💰 月の予算設定</h3>
+      <p>予算を設定すると残り金額が表示されます。</p>
+      <div class="fg"><input type="number" id="s-budget" placeholder="例: 50000" min="0" inputmode="numeric"></div>
+      <button class="btn-export" onclick="saveBudget()">保存</button>
+    </div>
+    <div class="set-card">
+      <h3>📤 データエクスポート</h3>
+      <p>CSVまたはJSONでダウンロード。</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn-export" onclick="exportCSV()">CSV</button>
+        <button class="btn-export" onclick="exportJSON()">JSON</button>
+      </div>
+    </div>
+    <div class="set-card">
+      <h3>📥 データインポート</h3>
+      <p>バックアップしたJSONファイルから復元。</p>
+      <button class="btn-export" onclick="document.getElementById('import-input').click()">インポート</button>
+      <input type="file" id="import-input" accept=".json" style="display:none">
+    </div>
+    <div class="set-card">
       <h3>🗑️ データ削除</h3>
-      <p>すべての家計簿データを削除します。この操作は元に戻せません。</p>
+      <p>すべてのデータを削除します。</p>
       <button class="btn-danger" onclick="confirmDeleteAll()">全データ削除</button>
     </div>
-    <div class="settings-card">
+    <div class="set-card">
       <h3>ℹ️ このアプリについて</h3>
-      <p>
-        かんたん家計簿 v1.0<br>
-        データはブラウザ内に保存されるため、サーバーへの送信は一切ありません。<br>
-        プライバシーを守りながら家計管理ができます。
-      </p>
+      <p>ポチャッコのわくわく家計簿 v1.0<br>データはブラウザ内に保存されます。<br>サーバーへの送信はありません。</p>
     </div>
   </div>
-</div>
 
-<!-- ===== FAB ===== -->
-<button class="add-fab" id="add-fab" aria-label="新規追加">＋</button>
+  <!-- Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-p="home"><span class="icon">🏠</span>ホーム</button>
+    <button class="nav-btn" data-p="camera"><span class="icon">📷</span>撮影</button>
+    <button class="nav-btn" data-p="history"><span class="icon">📋</span>履歴</button>
+    <button class="nav-btn" data-p="analysis"><span class="icon">📊</span>分析</button>
+    <button class="nav-btn" data-p="settings"><span class="icon">⚙️</span>設定</button>
+  </nav>
 
-<!-- ===== Bottom Nav ===== -->
-<nav class="bottom-nav">
-  <button class="nav-btn active" data-page="home">
-    <span class="icon">🏠</span>
-    ホーム
-  </button>
-  <button class="nav-btn" data-page="settings">
-    <span class="icon">⚙️</span>
-    設定
-  </button>
-</nav>
-
-<!-- ===== Add/Edit Modal ===== -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="modal" id="modal">
-    <div class="modal-handle"></div>
-    <h2 id="modal-title">支出を追加</h2>
-
-    <form id="expense-form" onsubmit="return false;">
-      <div class="form-group">
-        <label>📅 日付</label>
-        <input type="date" id="inp-date" required>
-      </div>
-      <div class="form-group">
-        <label>🏪 店名・内容</label>
-        <input type="text" id="inp-store" placeholder="例: スーパーマルエツ" required>
-      </div>
-      <div class="form-group">
-        <label>💰 金額（円）</label>
-        <input type="number" id="inp-amount" placeholder="例: 1280" min="0" inputmode="numeric" required>
-      </div>
-      <div class="form-group">
-        <label>📁 カテゴリ</label>
-        <div class="category-chips" id="category-chips"></div>
-      </div>
-      <div class="form-group">
-        <label>📷 レシート画像（任意）</label>
-        <div class="receipt-upload" id="receipt-upload" onclick="document.getElementById('inp-receipt').click()">
-          <div class="upload-icon">📄</div>
-          <p>タップして画像を選択</p>
-          <input type="file" id="inp-receipt" accept="image/*" capture="environment">
-        </div>
-        <img id="receipt-preview" class="receipt-preview" style="display:none" alt="レシートプレビュー">
-      </div>
-      <button type="button" class="btn-submit" id="btn-save" onclick="saveExpense()">
-        保存する
-      </button>
-    </form>
-  </div>
-</div>
-
-<!-- ===== Confirm Dialog ===== -->
-<div class="confirm-overlay" id="confirm-overlay">
-  <div class="confirm-box">
-    <p id="confirm-message">本当に削除しますか？</p>
-    <div class="confirm-actions">
-      <button class="btn-cancel" onclick="closeConfirm()">キャンセル</button>
-      <button class="btn-confirm-delete" id="btn-confirm-action">削除</button>
+  <!-- Confirm -->
+  <div class="confirm-bg" id="confirm-bg">
+    <div class="confirm-box">
+      <p id="confirm-msg"></p>
+      <div class="confirm-acts"><button class="btn-cancel" onclick="closeConfirm()">キャンセル</button><button
+          class="btn-conf-del" id="btn-conf">削除</button></div>
     </div>
   </div>
-</div>
 
-<!-- ===== Toast ===== -->
-<div class="toast" id="toast"></div>
-
-<script>
-// ===================================================================
-// 定数 & カテゴリ定義
-// ===================================================================
-const CATEGORIES = [
-  { id: 'food',        name: '食費',       icon: '🍙', color: '#f472b6' },
-  { id: 'daily',       name: '日用品',     icon: '🧴', color: '#fb923c' },
-  { id: 'transport',   name: '交通費',     icon: '🚃', color: '#38bdf8' },
-  { id: 'medical',     name: '医療',       icon: '💊', color: '#34d399' },
-  { id: 'entertainment', name: '娯楽',     icon: '🎮', color: '#a78bfa' },
-  { id: 'clothing',    name: '衣服',       icon: '👕', color: '#fbbf24' },
-  { id: 'education',   name: '教育',       icon: '📚', color: '#6ee7b7' },
-  { id: 'utility',     name: '光熱費',     icon: '💡', color: '#f87171' },
-  { id: 'other',       name: 'その他',     icon: '📦', color: '#94a3b8' },
-];
-
-const STORAGE_KEY = 'kakeibo_data';
-
-// ===================================================================
-// State
-// ===================================================================
-let expenses = loadData();
-let currentYear, currentMonth;
-let editingId = null;
-let selectedCategory = 'food';
-let receiptDataUrl = null;
-let confirmCallback = null;
-
-// Initialize date to current
-const now = new Date();
-currentYear = now.getFullYear();
-currentMonth = now.getMonth(); // 0-indexed
-
-// ===================================================================
-// Data Persistence (localStorage)
-// ===================================================================
-function loadData() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses));
-}
-
-function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
-
-// ===================================================================
-// Rendering
-// ===================================================================
-function render() {
-  renderMonthLabel();
-  renderSummary();
-  renderCategoryBars();
-  renderExpenseList();
-}
-
-function renderMonthLabel() {
-  document.getElementById('month-label').textContent =
-    `${currentYear}年 ${currentMonth + 1}月`;
-}
-
-function getMonthExpenses() {
-  return expenses.filter(e => {
-    const d = new Date(e.date);
-    return d.getFullYear() === currentYear && d.getMonth() === currentMonth;
-  }).sort((a, b) => new Date(b.date) - new Date(a.date));
-}
-
-function renderSummary() {
-  const items = getMonthExpenses();
-  const total = items.reduce((s, e) => s + e.amount, 0);
-
-  // Top 2 categories
-  const catTotals = {};
-  items.forEach(e => {
-    catTotals[e.category] = (catTotals[e.category] || 0) + e.amount;
-  });
-  const sorted = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
-  const top = sorted.slice(0, 2);
-
-  let html = `
-    <div class="summary-card total">
-      <div class="label">今月の合計</div>
-      <div class="amount">¥${total.toLocaleString()}</div>
+  <!-- Edit Modal -->
+  <div class="modal-bg" id="edit-bg" onclick="if(event.target===this)closeEdit()">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 id="edit-title">支出を編集</h2>
+      <div class="form-wrap">
+        <div class="fg"><label>📅 日付</label><input type="date" id="e-date"></div>
+        <div class="fg"><label>🏪 店名</label><input type="text" id="e-store"></div>
+        <div class="fg"><label>💰 金額</label><input type="number" id="e-amount" min="0" inputmode="numeric"></div>
+        <div class="fg"><label>📁 カテゴリ</label>
+          <div class="cat-chips" id="e-cats"></div>
+        </div>
+        <button class="btn-primary" onclick="saveEdit()">保存</button>
+      </div>
     </div>
-  `;
+  </div>
 
-  if (top.length > 0) {
-    top.forEach(([catId, amt]) => {
-      const cat = CATEGORIES.find(c => c.id === catId) || CATEGORIES[8];
-      html += `
-        <div class="summary-card">
-          <div class="label">${cat.icon} ${cat.name}</div>
-          <div class="amount">¥${amt.toLocaleString()}</div>
-        </div>
-      `;
-    });
-  }
+  <div class="toast" id="toast"></div>
 
-  // Items count
-  html += `
-    <div class="summary-card" ${top.length === 0 ? '' : ''}>
-      <div class="label">📋 件数</div>
-      <div class="amount">${items.length}件</div>
-    </div>
-  `;
-
-  document.getElementById('summary-cards').innerHTML = html;
-}
-
-function renderCategoryBars() {
-  const items = getMonthExpenses();
-  const total = items.reduce((s, e) => s + e.amount, 0);
-  const catTotals = {};
-  items.forEach(e => {
-    catTotals[e.category] = (catTotals[e.category] || 0) + e.amount;
-  });
-
-  const section = document.getElementById('category-section');
-  const container = document.getElementById('category-bars');
-
-  if (total === 0) {
-    section.style.display = 'none';
-    return;
-  }
-  section.style.display = 'block';
-
-  const sorted = Object.entries(catTotals).sort((a, b) => b[1] - a[1]);
-  let html = '';
-  sorted.forEach(([catId, amt]) => {
-    const cat = CATEGORIES.find(c => c.id === catId) || CATEGORIES[8];
-    const pct = Math.round((amt / total) * 100);
-    html += `
-      <div class="cat-row">
-        <div class="cat-icon" style="background:${cat.color}22;">${cat.icon}</div>
-        <div class="cat-info">
-          <div class="cat-name">${cat.name}（${pct}%）</div>
-          <div class="cat-bar-bg">
-            <div class="cat-bar-fill" style="width:${pct}%;background:${cat.color};"></div>
-          </div>
-        </div>
-        <div class="cat-amount" style="color:${cat.color}">¥${amt.toLocaleString()}</div>
-      </div>
-    `;
-  });
-  container.innerHTML = html;
-}
-
-function renderExpenseList() {
-  const items = getMonthExpenses();
-  const container = document.getElementById('expense-list');
-
-  if (items.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="emoji">📝</div>
-        <p>この月の記録はまだありません。<br>右下の「＋」ボタンから追加しましょう！</p>
-      </div>
-    `;
-    return;
-  }
-
-  let html = '';
-  items.forEach(e => {
-    const cat = CATEGORIES.find(c => c.id === e.category) || CATEGORIES[8];
-    const d = new Date(e.date);
-    const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
-    html += `
-      <div class="expense-item" onclick="openEdit('${e.id}')">
-        <div class="expense-icon" style="background:${cat.color}22;">${cat.icon}</div>
-        <div class="expense-detail">
-          <div class="expense-store">${escapeHtml(e.store)}</div>
-          <div class="expense-meta">${dateStr} ・ ${cat.name}</div>
-        </div>
-        <div class="expense-amount">-¥${e.amount.toLocaleString()}</div>
-        <button class="expense-delete" onclick="event.stopPropagation();confirmDelete('${e.id}')" aria-label="削除">✕</button>
-      </div>
-    `;
-  });
-  container.innerHTML = html;
-}
-
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-// ===================================================================
-// Category Chips in Modal
-// ===================================================================
-function renderCategoryChips() {
-  const container = document.getElementById('category-chips');
-  let html = '';
-  CATEGORIES.forEach(cat => {
-    html += `
-      <div class="category-chip ${selectedCategory === cat.id ? 'selected' : ''}"
-           onclick="selectCategory('${cat.id}')">
-        <span class="chip-icon">${cat.icon}</span>
-        ${cat.name}
-      </div>
-    `;
-  });
-  container.innerHTML = html;
-}
-
-function selectCategory(id) {
-  selectedCategory = id;
-  renderCategoryChips();
-}
-
-// ===================================================================
-// Modal (Add/Edit)
-// ===================================================================
-function openModal() {
-  editingId = null;
-  selectedCategory = 'food';
-  receiptDataUrl = null;
-  document.getElementById('modal-title').textContent = '支出を追加';
-  document.getElementById('inp-date').value = formatDateInput(new Date());
-  document.getElementById('inp-store').value = '';
-  document.getElementById('inp-amount').value = '';
-  document.getElementById('receipt-preview').style.display = 'none';
-  document.getElementById('inp-receipt').value = '';
-  const uploadDiv = document.getElementById('receipt-upload');
-  uploadDiv.querySelector('.upload-icon').textContent = '📄';
-  uploadDiv.querySelector('p').textContent = 'タップして画像を選択';
-  renderCategoryChips();
-  showModal();
-}
-
-function openEdit(id) {
-  const expense = expenses.find(e => e.id === id);
-  if (!expense) return;
-  editingId = id;
-  selectedCategory = expense.category;
-  receiptDataUrl = expense.receipt || null;
-  document.getElementById('modal-title').textContent = '支出を編集';
-  document.getElementById('inp-date').value = expense.date;
-  document.getElementById('inp-store').value = expense.store;
-  document.getElementById('inp-amount').value = expense.amount;
-  const preview = document.getElementById('receipt-preview');
-  if (receiptDataUrl) {
-    preview.src = receiptDataUrl;
-    preview.style.display = 'block';
-  } else {
-    preview.style.display = 'none';
-  }
-  renderCategoryChips();
-  showModal();
-}
-
-function showModal() {
-  document.getElementById('modal-overlay').classList.add('show');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeModal() {
-  document.getElementById('modal-overlay').classList.remove('show');
-  document.body.style.overflow = '';
-}
-
-// ===================================================================
-// Save Expense
-// ===================================================================
-function saveExpense() {
-  const date = document.getElementById('inp-date').value;
-  const store = document.getElementById('inp-store').value.trim();
-  const amount = parseInt(document.getElementById('inp-amount').value, 10);
-
-  if (!date || !store || isNaN(amount) || amount < 0) {
-    showToast('⚠️ すべての項目を入力してください', '#fbbf24');
-    return;
-  }
-
-  if (editingId) {
-    const idx = expenses.findIndex(e => e.id === editingId);
-    if (idx !== -1) {
-      expenses[idx] = {
-        ...expenses[idx],
-        date,
-        store,
-        amount,
-        category: selectedCategory,
-        receipt: receiptDataUrl,
-      };
-    }
-    showToast('✏️ 更新しました');
-  } else {
-    expenses.push({
-      id: generateId(),
-      date,
-      store,
-      amount,
-      category: selectedCategory,
-      receipt: receiptDataUrl,
-    });
-    showToast('✅ 保存しました');
-  }
-
-  saveData();
-  closeModal();
-  render();
-}
-
-// ===================================================================
-// Delete
-// ===================================================================
-function confirmDelete(id) {
-  confirmCallback = () => {
-    expenses = expenses.filter(e => e.id !== id);
-    saveData();
-    render();
-    showToast('🗑️ 削除しました');
-  };
-  document.getElementById('confirm-message').textContent = 'この支出を削除しますか？';
-  document.getElementById('confirm-overlay').classList.add('show');
-}
-
-function confirmDeleteAll() {
-  confirmCallback = () => {
-    expenses = [];
-    saveData();
-    render();
-    showToast('🗑️ 全データを削除しました');
-  };
-  document.getElementById('confirm-message').textContent =
-    'すべてのデータを削除しますか？\nこの操作は元に戻せません。';
-  document.getElementById('confirm-overlay').classList.add('show');
-}
-
-function closeConfirm() {
-  document.getElementById('confirm-overlay').classList.remove('show');
-  confirmCallback = null;
-}
-
-document.getElementById('btn-confirm-action').addEventListener('click', () => {
-  if (confirmCallback) confirmCallback();
-  closeConfirm();
-});
-
-// ===================================================================
-// Receipt Image
-// ===================================================================
-document.getElementById('inp-receipt').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  if (file.size > 5 * 1024 * 1024) {
-    showToast('⚠️ 画像サイズは5MB以下にしてください', '#fbbf24');
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    // Compress the image to save localStorage space
-    const img = new Image();
-    img.onload = function() {
-      const canvas = document.createElement('canvas');
-      const maxSize = 800;
-      let w = img.width, h = img.height;
-      if (w > maxSize || h > maxSize) {
-        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
-        else { w = Math.round(w * maxSize / h); h = maxSize; }
-      }
-      canvas.width = w;
-      canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      receiptDataUrl = canvas.toDataURL('image/jpeg', 0.6);
-      document.getElementById('receipt-preview').src = receiptDataUrl;
-      document.getElementById('receipt-preview').style.display = 'block';
-    };
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-});
-
-// ===================================================================
-// CSV Export
-// ===================================================================
-function exportCSV() {
-  if (expenses.length === 0) {
-    showToast('⚠️ データがありません', '#fbbf24');
-    return;
-  }
-  let csv = '\uFEFF日付,店名,金額,カテゴリ\n';
-  const sorted = [...expenses].sort((a, b) => a.date.localeCompare(b.date));
-  sorted.forEach(e => {
-    const cat = CATEGORIES.find(c => c.id === e.category) || CATEGORIES[8];
-    csv += `${e.date},"${e.store}",${e.amount},${cat.name}\n`;
-  });
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `kakeibo_${currentYear}${String(currentMonth+1).padStart(2,'0')}.csv`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('📤 CSVをダウンロードしました');
-}
-
-// ===================================================================
-// Toast
-// ===================================================================
-function showToast(message, color = '#34d399') {
-  const el = document.getElementById('toast');
-  el.textContent = message;
-  el.style.background = color;
-  el.style.color = color === '#fbbf24' ? '#78350f' : '#064e3b';
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2200);
-}
-
-// ===================================================================
-// Navigation
-// ===================================================================
-document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const page = btn.dataset.page;
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('page-' + page).classList.add('active');
-    document.getElementById('add-fab').style.display = page === 'home' ? 'flex' : 'none';
-  });
-});
-
-// Month navigation
-document.getElementById('prev-month').addEventListener('click', () => {
-  currentMonth--;
-  if (currentMonth < 0) { currentMonth = 11; currentYear--; }
-  render();
-});
-document.getElementById('next-month').addEventListener('click', () => {
-  currentMonth++;
-  if (currentMonth > 11) { currentMonth = 0; currentYear++; }
-  render();
-});
-
-// FAB
-document.getElementById('add-fab').addEventListener('click', openModal);
-
-// Close modal on overlay click
-document.getElementById('modal-overlay').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) closeModal();
-});
-
-// Close confirm on overlay click
-document.getElementById('confirm-overlay').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) closeConfirm();
-});
-
-// ===================================================================
-// Utility
-// ===================================================================
-function formatDateInput(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-// ===================================================================
-// Init
-// ===================================================================
-render();
-</script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
 </body>
-</html>
 
+</html>
