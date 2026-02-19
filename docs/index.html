@@ -1,1 +1,59 @@
-index.html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AI家計簿</title>
+<style>
+body { font-family: sans-serif; background:#111; color:white; text-align:center; }
+button { padding:12px 20px; font-size:16px; margin:10px; }
+input { margin:10px; }
+.card { background:#222; padding:15px; margin:10px; border-radius:10px; }
+</style>
+</head>
+
+<body>
+
+<h1>AIかんたん家計簿</h1>
+
+<button onclick="history.back()">⬅️ 戻る</button>
+
+<h2>📷 レシートを選択</h2>
+<input type="file" accept="image/*" onchange="readReceipt(event)">
+
+<div id="result"></div>
+
+<script>
+function readReceipt(event){
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const text = fakeAI();
+
+    document.getElementById("result").innerHTML =
+      `<div class="card">
+        🏪 店名: ${text.shop}<br>
+        💰 金額: ${text.price}円<br>
+        📂 カテゴリ: ${text.category}
+      </div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+// 仮のAI（デモ用）
+function fakeAI(){
+  const shops = ["セブンイレブン","イオン","ローソン","スタバ"];
+  const cats = ["食費","日用品","外食","その他"];
+
+  return {
+    shop: shops[Math.floor(Math.random()*shops.length)],
+    price: Math.floor(Math.random()*2000)+100,
+    category: cats[Math.floor(Math.random()*cats.length)]
+  };
+}
+</script>
+
+</body>
+</html>
+
